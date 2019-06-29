@@ -1,8 +1,16 @@
 import React, { useState, useEffect } from "react";
 import uuid from "uuid";
 import ReactMarkdown from "react-markdown";
+import moment from "moment";
 
-function Note({ text, id, handleEditNote, handleDeleteNote }) {
+function Note({
+  text,
+  id,
+  createdAt,
+  editedAt,
+  handleEditNote,
+  handleDeleteNote
+}) {
   const [isEditing, setEditing] = useState(false);
   const [newNoteText, setNewNoteText] = useState(text);
 
@@ -12,7 +20,7 @@ function Note({ text, id, handleEditNote, handleDeleteNote }) {
   };
 
   return (
-    <div onClick={() => setEditing(!isEditing)} className="note">
+    <div onClick={() => setEditing(true)} className="note">
       {isEditing ? (
         <div>
           <textarea
@@ -28,7 +36,11 @@ function Note({ text, id, handleEditNote, handleDeleteNote }) {
         </div>
       ) : (
         <div className="note--is-not-editing">
-          {/* <span>{newNoteText}</span> */}
+          <span>
+            {editedAt ? `edited ` : `created `}
+            {moment(editedAt || createdAt).fromNow()}
+          </span>
+
           <ReactMarkdown source={newNoteText} />
           <div
             onClick={() => handleDeleteNote(id)}
@@ -44,12 +56,7 @@ function Note({ text, id, handleEditNote, handleDeleteNote }) {
 
 function App() {
   const [notes, setNotes] = useState(
-    JSON.parse(localStorage.getItem("noteTaker")) || [
-      {
-        id: uuid(),
-        text: "New note. Click to edit me."
-      }
-    ]
+    JSON.parse(localStorage.getItem("noteTaker"))
   );
 
   useEffect(() => {
@@ -57,7 +64,12 @@ function App() {
   }, [notes]);
 
   const handleAddNote = () => {
-    const newNote = { id: uuid(), text: "New note. Click to edit me." };
+    const newNote = {
+      id: uuid(),
+      text: "New note. Click to edit me.",
+      createdAt: new Date(),
+      editedAt: null
+    };
     setNotes([...notes, newNote]);
   };
 
@@ -66,6 +78,7 @@ function App() {
     updatedNotes.map(note => {
       if (note.id === id) {
         note.text = newNoteText.replace("\\n", "\n");
+        note.editedAt = new Date();
       }
       return note;
     });
@@ -77,6 +90,9 @@ function App() {
     setNotes(filteredNotes);
   };
 
+  const sortByMostRecentlyCreated = array =>
+    array.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
   return (
     <>
       <div className="header">
@@ -86,11 +102,10 @@ function App() {
         </button>
       </div>
       <div className="container">
-        {notes.map(({ text, id }) => (
+        {sortByMostRecentlyCreated(notes).map(note => (
           <Note
-            text={text}
-            key={id}
-            id={id}
+            {...note}
+            key={note.id}
             handleEditNote={handleEditNote}
             handleDeleteNote={handleDeleteNote}
           />
