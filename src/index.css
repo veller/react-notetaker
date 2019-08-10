@@ -64,6 +64,10 @@ body {
   flex-direction: column;
 }
 
+.note--is-not-editing > span {
+  color: #a0aec0;
+}
+
 .note--is-not-editing__delete-button {
   color: #ff487e;
   cursor: pointer;

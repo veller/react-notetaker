@@ -56,7 +56,7 @@ function Note({
 
 function App() {
   const [notes, setNotes] = useState(
-    JSON.parse(localStorage.getItem("noteTaker"))
+    JSON.parse(localStorage.getItem("noteTaker")) || []
   );
 
   useEffect(() => {
